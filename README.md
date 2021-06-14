@@ -1,2 +1,33 @@
 # stepadna
-Spatio-temporal modelling of beneficial allele spread using low coverage Ancient DNA
+Spatio-temporal modelling of beneficial allele spread using low-coverage Ancient DNA
+
+Input file should be a .csv file, where each row corresponds to a sample and contains the following columns:
+- age in years BP
+- degrees latitude
+- degrees longitude
+- pseudohaploid genotype, where 0 indicates ancestral allele state and 2 stands for derived allele.
+The samples should be ordered from oldest to newest.
+
+Example file:
+   age | lat | lon | genotype
+s1 500.  34.3 44.5.  0
+s2
+s3
+s4
+
+The input also asks for the age of the allele.
+Optional parameters are
+- number of cores (default is 1)
+- number of initial points for the simulated annealing algorithm (defaults to 2)
+
+The output is a .csv file containing the inferred:
+- selection coefficient
+- longitudinal diffusion coefficient
+- latitudinal diffusion coefficient
+- longitudinal advection coefficient
+- latitudinal advection coefficient
+- longitude of the origin of the allele
+- latitude of the origin of the allele
+
+ Additionally, a .gif file with the inferred allele dynamics in produced.
+
