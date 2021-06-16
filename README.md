@@ -2,10 +2,10 @@
 Spatio-temporal modelling of beneficial allele spread using low-coverage Ancient DNA
 
 Input file should be a .csv file, where each row corresponds to a sample and contains the following columns:
-- age in years BP
-- degrees latitude
-- degrees longitude
-- pseudohaploid genotype, where 0 indicates ancestral allele state and 2 stands for derived allele.
+- age in years BP named "age"
+- degrees latitude named "latitude"
+- degrees longitude named "longitude"
+- pseudohaploid genotype named "genotype", where 0 indicates ancestral allele state and 2 stands for derived allele.
 The samples should be ordered from oldest to newest.
 
 Example file:
