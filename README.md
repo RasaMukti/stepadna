@@ -46,13 +46,13 @@ It is possible to produce a GIF with the inferred allele dynamics.
 This is done using the file stepplots.R and it takes as an input the output file produced by stepadna.R.
 An example of a command for doing this:
 ```
-Rscript stepplots.R -f result.csv -o result_plot -n 10
+Rscript stepplots.R -f result.csv -n 10
 ```
 
 The input parameters are:
 ```
 -f --file – file produced by stepadna.R
--o --out - output file name (defaults to outplot)
+-o --out - output file name (defaults to outplot.gif)
 -n --nimage - number of images to display in the GIF (default is 20)
 ```
 
