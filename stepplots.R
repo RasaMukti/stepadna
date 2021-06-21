@@ -3,7 +3,7 @@ library(optparse)
 option_list = list(
   make_option(c("-f", "--file"), type="character", default=NULL,
               help="dataset file name"),
-  make_option(c("-o", "--out"), type="character", default="outplot",
+  make_option(c("-o", "--out"), type="character", default="outplot.gif",
               help="output file name [default= %default]"),
   make_option(c("-n", "--nimage"), type="integer", default=20,
               help="number of images in GIF")
