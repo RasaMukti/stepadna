@@ -10,7 +10,7 @@ Input file should be a .csv file, where each row corresponds to a sample and con
 Example of an input file:
 
    | age | latitude | longitude | genotype
-   | --- | --- | --- | ---
+--- | --- | --- | --- | ---
 s1 | 6590 | 34.3 | 44.5 | 0
 
 
