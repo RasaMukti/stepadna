@@ -15,11 +15,18 @@ s1 | 6590 | 35.3 | 44.5 | 0
 s2 | 3200 | 54 | 51.8 | 0
 s3 | 0 | 52.2 | 18.6 | 2
 
+Input parameters:
+-f --file – input file containing the data
+-a --age – age of the allele in years 
+-o --out - output file name (defaults to out.csv)
+-i --init - number of points to initialize for the simulated annealing algorithm (defaults to 2)
+-c --cores - number of cores to use (defaults to 1)
 
-The input also asks for the age of the allele.
-Optional parameters are
-- number of cores (default is 1)
-- number of initial points for the simulated annealing algorithm (defaults to 2)
+Example to run the programme from the command line for an allele that is 29000 years old
+with 20 initial points in the simulated annealing algorithm distributed across 20 cores:
+
+Rscript stepadna.R -f data.csv -a 29000 -o results.csv -i 20 -c 20
+
 
 The output is a .csv file containing the inferred:
 - selection coefficient
