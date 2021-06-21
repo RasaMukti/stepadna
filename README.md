@@ -56,3 +56,5 @@ The input parameters are:
 -n --nimage - number of images to display in the GIF (default is 20)
 ```
 
+Example of an output GIF showigng tempo-spatial allele frequency dynamics:
+![](https://github.com/RasaMukti/stepadna/blob/main/outplot.gif)
