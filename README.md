@@ -39,7 +39,8 @@ The output is a .csv file containing the inferred:
 - latitudinal advection coefficient
 - longitude of the origin of the allele
 - latitude of the origin of the allele
-fore time periods before and after 5000 years.
+
+for time periods before and after 5000 years.
 
 It is possible to produce a GIF with the inferred allele dynamics.
 This is done using the file stepplots.R and it takes as an input the output file produced by stepadna.R.
