@@ -11,7 +11,9 @@ Example of an input file:
 
  sampleID  | age | latitude | longitude | genotype
  --- | --- | --- | --- | ---
-s1 | 6590 | 34.3 | 44.5 | 0
+s1 | 6590 | 35.3 | 44.5 | 0
+s2 | 3200 | 54 | 51.8 | 0
+s3 | 0 | 52.2 | 18.6 | 2
 
 
 The input also asks for the age of the allele.
