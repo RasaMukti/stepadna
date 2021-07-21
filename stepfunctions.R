@@ -143,7 +143,7 @@ FischerSolver <- function(Nx, Ny, s, sigmax, sigmay, D, x0, y0, xtran, ytran, ti
   return(out)
 }
 
-getCI <- function(bestRes, oldnew){
+getCI <- function(bestRes, oldnew, LL){
   
   flag <-  TRUE
   maxit <- 0
@@ -166,24 +166,24 @@ getCI <- function(bestRes, oldnew){
     start_list <- start_list_new
     
     if (oldnew == "old") {
-      resCI <- mle2(minuslogl=LL_2step, start=start_list,
+      resCI <- mle2(minuslogl=LL, start=start_list,
                     fixed=list(Nx=Nx, Ny=Ny, D=D, x0=coef(bestRes)[["x0"]], y0=coef(bestRes)[["y0"]], timeP=timeP, timeSplit=timeSplit, oldnew=0),
                     method = "L-BFGS-B")
       
       estim <- c(coef(resCI)[["s"]], coef(resCI)[["sigmax"]], coef(resCI)[["sigmay"]], coef(resCI)[["xtran"]], coef(resCI)[["ytran"]])
       
-      hes <- numDeriv::hessian(function(x) LL_2step(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, 0), estim)
-      hes2 <- nlme::fdHess(estim, function(x) LL_2step(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, 0))
+      hes <- numDeriv::hessian(function(x) LL(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, 0), estim)
+      hes2 <- nlme::fdHess(estim, function(x) LL(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, 0))
       
     } else if (oldnew == "new"){
-      resCI <- mle2(minuslogl=LL_2step, start=start_list,
+      resCI <- mle2(minuslogl=LL, start=start_list,
                     fixed=list(Nx=Nx, Ny=Ny, D=D, x0=coef(bestRes)[["x0"]], y0=coef(bestRes)[["y0"]], timeP=timeP, timeSplit=timeSplit, oldnew=1),
                     method = "L-BFGS-B")
       
       estim <- c(coef(resCI)[["s"]], coef(resCI)[["sigmax"]], coef(resCI)[["sigmay"]], coef(resCI)[["xtran"]], coef(resCI)[["ytran"]])
       
-      hes <- numDeriv::hessian(function(x) LL_2step(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, 1), estim)
-      hes2 <- nlme::fdHess(estim, function(x) LL_2step(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, 1))
+      hes <- numDeriv::hessian(function(x) LL(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, 1), estim)
+      hes2 <- nlme::fdHess(estim, function(x) LL(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, 1))
       
     }
     inv_hes <- solve(hes)
@@ -201,7 +201,7 @@ getCI <- function(bestRes, oldnew){
   return(c(resCI, CIvect))
 }
 
-param_optim_old <- function(init_points = 2, seed = 5, num_cores = 1){
+param_optim_old <- function(init_points = 2, seed = 5, num_cores = 1, LL){
 
   # Randomly initialise grid points for optimization
   set.seed(seed)
@@ -214,18 +214,11 @@ param_optim_old <- function(init_points = 2, seed = 5, num_cores = 1){
   colnames(parSets) <- c("s", "sigmax", "sigmay", "xtran", "ytran", "x0", "y0")
   
   samps = 1:init_points
-  
-  set.seed(seed)
-  
+  set.seed(seed, kind = "L'Ecuyer-CMRG")
   #Do the optimization and return best set of parameters
-  res <- mclapply(samps, function(x) mle2(minuslogl=LL_2step, start=as.list(parSets[x,]),
+  res <- mclapply(samps, function(x) mle2(minuslogl=LL, start=as.list(parSets[x,]),
                                           fixed=list(Nx=Nx, Ny=Ny, D=D, timeP=timeP, timeSplit=timeSplit, oldnew=0),
                                           method = "SANN", control = list(temp = 100)), mc.cores=num_cores)
-
-  # res <- mclapply(samps, function(x) mle2(minuslogl=LL_2step, start=as.list(parSets[x,]),
-  #                                         lower=c(0,1,1,-2.5,-2.5,1,1), upper=c(0.1,100,100,2.5,2.5,45,110),
-  #                                         fixed=list(Nx=Nx, Ny=Ny, D=D, timeP=timeP, timeSplit=timeSplit, oldnew=0),
-  #                                         method = "L-BFGS-B"), mc.cores=num_cores)
 
   tres <- unlist(lapply(1:length(res), function(i) logLik(res[[i]])))
   bestRes <- res[[which(tres == max(tres, na.rm=TRUE))]]
@@ -233,7 +226,7 @@ param_optim_old <- function(init_points = 2, seed = 5, num_cores = 1){
   return(bestRes)
 }
 
-param_optim_new <- function(init_points = 2, seed = 5, num_cores = 1){
+param_optim_new <- function(init_points = 2, seed = 5, num_cores = 1, LL){
   # Randomly initialise grid points for optimization
   set.seed(seed)
   pars <- data.frame(min=c(0,1,1,-2.5,-2.5), max=c(0.1,100,100,2.5,2.5))
@@ -242,17 +235,179 @@ param_optim_new <- function(init_points = 2, seed = 5, num_cores = 1){
   
   samps = 1:init_points
   
+  set.seed(seed, kind = "L'Ecuyer-CMRG")
   # Do the optimization and return best set of parameters
-  # res <- mclapply(samps, function(x) mle2(minuslogl=LL_2step, start=as.list(parSets[x,]),
-  #                                         fixed=list(Nx=Nx, Ny=Ny, D=D, x0=coef(bestResOld)[["x0"]], y0=coef(bestResOld)[["y0"]],
-  #                                                    timeP=timeP, timeSplit=timeSplit, oldnew=1),
-  #                                         method = "SANN", control = list(temp = 100)), mc.cores=num_cores)
-  res <- mclapply(samps, function(x) mle2(minuslogl=LL_2step, start=as.list(parSets[x,]), upper=pars$min, lower=pars$max,
+  res <- mclapply(samps, function(x) mle2(minuslogl=LL, start=as.list(parSets[x,]),
                                           fixed=list(Nx=Nx, Ny=Ny, D=D, x0=coef(bestResOld)[["x0"]], y0=coef(bestResOld)[["y0"]],
                                                      timeP=timeP, timeSplit=timeSplit, oldnew=1),
-                                          method = "L-BFGS-B"), mc.cores=num_cores)
+                                          method = "SANN", control = list(temp = 100)), mc.cores=num_cores)
+
+  tres <- unlist(lapply(1:length(res), function(i) logLik(res[[i]])))
+  bestRes <- res[[which(tres == max(tres, na.rm=TRUE))]]
   
+  return(bestRes)
+}
+
+param_optim_fixedInit <- function(init_points = 2, seed = 5, num_cores = 1, LL, oldnew){
   
+  # Randomly initialise grid points for optimization
+  set.seed(seed)
+  pars <- data.frame(min=c(0,1,1,-2.5,-2.5), max=c(0.1,100,100,2.5,2.5))
+  rownames(pars) <- c("s", "sigmax", "sigmay", "xtran", "ytran")
+  parSets <- Latinhyper(pars, init_points)
+  
+  colnames(parSets) <- c("s", "sigmax", "sigmay", "xtran", "ytran")
+  
+  samps = 1:init_points
+  
+  # Do the optimization and return best set of parameters
+  if (oldnew == "old") {
+    set.seed(seed, kind = "L'Ecuyer-CMRG")
+    res <- mclapply(samps, function(x) mle2(minuslogl=LL, start=as.list(parSets[x,]),
+                                            fixed=list(Nx=Nx, Ny=Ny, D=D,  
+                                                       x0=x0_fixed, y0=y0_fixed,
+                                                       timeP=timeP, timeSplit=timeSplit, oldnew=0),
+                                            method = "SANN", control = list(temp = 100)), mc.cores=num_cores)
+  } else if (oldnew == "new"){ 
+    set.seed(seed, kind = "L'Ecuyer-CMRG")
+    res <- mclapply(samps, function(x) mle2(minuslogl=LL, start=as.list(parSets[x,]),
+                                            fixed=list(Nx=Nx, Ny=Ny, D=D,  
+                                                       x0=coef(bestResOld)[["x0"]], y0=coef(bestResOld)[["y0"]],
+                                                       timeP=timeP, timeSplit=timeSplit, oldnew=1),
+                                            method = "SANN", control = list(temp = 100)), mc.cores=num_cores)
+  }
+  tres <- unlist(lapply(1:length(res), function(i) logLik(res[[i]])))
+  bestRes <- res[[which(tres == max(tres, na.rm=TRUE))]]
+  
+  return(bestRes)
+}
+
+
+getCI_B <- function(bestRes, advection=TRUE, oldnew, LL){
+  
+  flag <-  TRUE
+  maxit <- 0
+  estim <- c(coef(bestRes)[["s"]], coef(bestRes)[["sigmax"]], coef(bestRes)[["sigmay"]], coef(bestRes)[["xtran"]], coef(bestRes)[["ytran"]])
+  
+  while (flag & maxit != 100) {
+    cat("Iteration:", maxit, "\n")
+    
+    if (advection == TRUE){
+      lower <- c(0.001, 1, 1, -2.5, -2.5)
+      upper <- c(0.1, 100, 100, 2.5, 2.5)
+    
+      set.seed(66)
+      start_list <- list(s=estim[1], sigmax=estim[2], sigmay=estim[3], xtran=estim[4], ytran=estim[5])
+      start_list_new <- mapply(x = start_list, y = rnorm(5,0,c(0.002, 1, 1, 0.05, 0.05)), 
+                               function(x, y) x<-x+y)
+      fixed = list(Nx=Nx, Ny=Ny, D=D, x0=coef(bestRes)[["x0"]], y0=coef(bestRes)[["y0"]], timeP=timeP, timeSplit=timeSplit, oldnew=oldnew)
+    } else{      
+      lower <- c(0.001, 1, 1)
+      upper <- c(0.1, 100, 100)
+      set.seed(66)
+      start_list <- list(s=estim[1], sigmax=estim[2], sigmay=estim[3])
+      start_list_new <- mapply(x = start_list, y = rnorm(3,0,c(0.002, 1, 1)), 
+                               function(x, y) x<-x+y)
+      fixed = list(Nx=Nx, Ny=Ny, D=D, x0=coef(bestRes)[["x0"]], y0=coef(bestRes)[["y0"]], xtran = 0, ytran = 0, timeP=timeP, timeSplit=timeSplit, oldnew=oldnew)
+    }      
+    
+    bool_v <- mapply(x = start_list_new,u = upper,l = lower,FUN = function(x, u, l) x <= u & x >= l)
+    
+    start_list_new[which(bool_v == FALSE)] <- start_list[which(bool_v == FALSE)] 
+    start_list <- start_list_new
+    
+    resCI <- mle2(minuslogl=LL, start=start_list, lower=lower, upper=upper,
+                  fixed=fixed,
+                  method = "L-BFGS-B")
+    if (advection == TRUE){
+      estim <- c(coef(resCI)[["s"]], coef(resCI)[["sigmax"]], coef(resCI)[["sigmay"]], coef(resCI)[["xtran"]], coef(resCI)[["ytran"]])
+      hes <- numDeriv::hessian(function(x) LL(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, oldnew), estim)
+      hes2 <- nlme::fdHess(estim, function(x) LL(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], x[4], x[5], timeP, timeSplit, oldnew))
+    } else{
+      estim <- c(coef(resCI)[["s"]], coef(resCI)[["sigmax"]], coef(resCI)[["sigmay"]])
+      hes <- numDeriv::hessian(function(x) LL(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], 0, 0, timeP, timeSplit, oldnew), estim)
+      hes2 <- nlme::fdHess(estim, function(x) LL(1, Nx, Ny, x[1], x[2], x[3], D, coef(bestRes)[["x0"]], coef(bestRes)[["y0"]], 0, 0, timeP, timeSplit, oldnew))}
+    
+    inv_hes <- solve(hes)
+    inv_hes2 <- solve(hes2$Hessian)
+    
+    maxit <- maxit + 1
+    if (all(diag(inv_hes)>=0) | all(diag(inv_hes2)>=0)){
+      CIvect <- c()
+      flag <- FALSE
+      ifelse(all(diag(inv_hes)>=0), inv_hes <- inv_hes, inv_hes <- inv_hes2)
+      for (i in 1:length(estim)){
+        CIvect <- c(CIvect, round(estim[i]-1.96*sqrt(inv_hes[i,i]), 4), round(estim[i]+1.96*sqrt(inv_hes[i,i]), 4))
+      }}
+  }
+  return(c(resCI, CIvect))
+}
+
+param_optim_old_B <- function(init_points = 2, seed = 5, num_cores = 1, advection = TRUE, LL){
+  
+  # Randomly initialise grid points for optimization
+  if (advection == TRUE){
+    set.seed(seed)
+    pars <- data.frame(min=c(0,1,1,-2.5,-2.5,1), max=c(0.1,100,100,2.5,2.5,28))
+    rownames(pars) <- c("s", "sigmax", "sigmay", "xtran", "ytran", "place")
+    parSets <- Latinhyper(pars, init_points)
+    parSets <- cbind(parSets, sapply(parSets[,"place"], function(x) Nx+1-which(round(topoLat) == Latpoints[round(x)])[1]),
+                     sapply(parSets[,"place"], function(x) which(round(topoLon) == Lonpoints[x])[1]))
+    parSets <- parSets[, !colnames(parSets) %in% c("place")] 
+    colnames(parSets) <- c("s", "sigmax", "sigmay", "xtran", "ytran", "x0", "y0")
+    
+    samps = 1:init_points
+    
+    set.seed(seed, kind = "L'Ecuyer-CMRG")
+    #Do the optimization and return best set of parameters
+    res <- mclapply(samps, function(x) mle2(minuslogl=LL, start=as.list(parSets[x,]),
+                                            fixed=list(Nx=Nx, Ny=Ny, D=D, timeP=timeP, timeSplit=timeSplit, oldnew=0),
+                                            method = "SANN", control = list(temp = 100)), mc.cores=num_cores)
+  } else if (advection == FALSE){ 
+    set.seed(seed)
+    pars <- data.frame(min=c(0,1,1,1), max=c(0.1,100,100,28))
+    rownames(pars) <- c("s", "sigmax", "sigmay", "place")
+    parSets <- Latinhyper(pars, init_points)
+    parSets <- cbind(parSets, sapply(parSets[,"place"], function(x) Nx+1-which(round(topoLat) == Latpoints[round(x)])[1]),
+                     sapply(parSets[,"place"], function(x) which(round(topoLon) == Lonpoints[x])[1]))
+    parSets <- parSets[, !colnames(parSets) %in% c("place")] 
+    colnames(parSets) <- c("s", "sigmax", "sigmay", "x0", "y0")
+    samps = 1:init_points
+    set.seed(seed, kind = "L'Ecuyer-CMRG")
+    res <- mclapply(samps, function(x) mle2(minuslogl=LL, start=as.list(parSets[x,]),
+                                            fixed=list(Nx=Nx, Ny=Ny, D=D, xtran=0, ytran=0, timeP=timeP, timeSplit=timeSplit, oldnew=0),
+                                            method = "SANN", control = list(temp = 100)), mc.cores=num_cores)}
+  tres <- unlist(lapply(1:length(res), function(i) logLik(res[[i]])))
+  bestRes <- res[[which(tres == max(tres, na.rm=TRUE))]]
+  
+  return(bestRes)
+}
+
+param_optim_new_B <- function(init_points = 2, seed = 5, num_cores = 1, advection = TRUE, LL){
+  if (advection == TRUE){
+  # Randomly initialise grid points for optimization
+    set.seed(seed)
+    pars <- data.frame(min=c(0,1,1,-2.5,-2.5), max=c(0.1,100,100,2.5,2.5))
+    rownames(pars) <- c("s", "sigmax", "sigmay", "xtran", "ytran")
+    parSets <- Latinhyper(pars, init_points)
+    samps = 1:init_points
+    set.seed(seed, kind = "L'Ecuyer-CMRG")
+    # Do the optimization and return best set of parameters
+    res <- mclapply(samps, function(x) mle2(minuslogl=LL, start=as.list(parSets[x,]),
+                                            fixed=list(Nx=Nx, Ny=Ny, D=D, x0=coef(bestResOld)[["x0"]], y0=coef(bestResOld)[["y0"]],
+                                                       timeP=timeP, timeSplit=timeSplit, oldnew=1),
+                                            method = "SANN", control = list(temp = 100)), mc.cores=num_cores)
+  } else if (advection == FALSE){    
+    set.seed(seed)
+    pars <- data.frame(min=c(0,1,1), max=c(0.1,100,100))
+    rownames(pars) <- c("s", "sigmax", "sigmay")
+    parSets <- Latinhyper(pars, init_points)
+    samps = 1:init_points
+    set.seed(seed, kind = "L'Ecuyer-CMRG")
+    res <- mclapply(samps, function(x) mle2(minuslogl=LL, start=as.list(parSets[x,]),
+                                            fixed=list(Nx=Nx, Ny=Ny, D=D, x0=coef(bestResOld)[["x0"]], y0=coef(bestResOld)[["y0"]],
+                                                       xtran=0, ytran=0, timeP=timeP, timeSplit=timeSplit, oldnew=1),
+                                            method = "SANN", control = list(temp = 100)), mc.cores=num_cores)}   
   tres <- unlist(lapply(1:length(res), function(i) logLik(res[[i]])))
   bestRes <- res[[which(tres == max(tres, na.rm=TRUE))]]
   
@@ -424,7 +579,7 @@ saveGif <- function(col_num, image_num, outName, diffusion_mat, timeP, Nx, Ny, l
       
       mplot <- ggplot() +
         geom_sf() +
-        coord_sf(xlim = c(-10, 80), ylim = c(35, 71), expand = FALSE)+
+        coord_sf(xlim = c(-10, 80), ylim = c(30, 71), expand = FALSE)+
         geom_raster() +
         theme_classic()+
         scale_fill_manual(values = colorNames)+
