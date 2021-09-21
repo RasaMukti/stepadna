@@ -1,7 +1,7 @@
 # stepadna
 Spatio-temporal modelling of beneficial allele spread using low-coverage Ancient DNA
 
-You can read about the method in more detail in: doi: https://doi.org/10.1101/2021.07.21.453231
+You can read about the method in more detail in: https://doi.org/10.1101/2021.07.21.453231
 
 ### Input
 Input file should be a .csv file, where each row corresponds to a sample and contains the following columns:
