@@ -14,12 +14,14 @@ The geographical boundaries used in the study are between 30°N to 75°N, and be
 
 ## Code
 In order to obtain parameter estimates for rs1042602(A) allele run stepadna.R using command:
+```
 Rscript stepadna.R -f tyr_data.csv -a 26361 -o tyr_output.csv -i 50 -c 50
-
+```
 Parameter estimates for rs4988235(T) allele can be obtained running the command:
+```
 Rscript stepadna_lct.R -a 7441 -o lct_output.csv -i 50 -c 50
-
-The "-a" flag specifies the age of the allele. The commands will be run initiating 50 points parallelised across 50 cores.
+```
+The "-a" flag specifies the age of the allele in years. The commands will be run initiating 50 points in the simulated annealing algorithm parallelised across 50 cores.
 
 The results described in the afore-mentioned paper have been produced using R verision 3.6.
 
