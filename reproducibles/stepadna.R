@@ -1,3 +1,10 @@
+list.of.packages <- c("deSolve","ReacTran","RColorBrewer","geosphere","fields","stats4","GEOmap","geomapdata","plsgenomics","paramtest","bbmle","parallel","maps","mapdata","mapplots","rworldmap","scales","tidyverse","FME","optparse")
+new.packages <-
+  list.of.packages[!(list.of.packages %in% installed.packages()[, "Package"])]
+if (length(new.packages)) {
+  install.packages(new.packages,repos = "http://cran.us.r-project.org")
+}
+
 library(optparse)
 option_list = list(
   make_option(c("-f", "--file"), type="character", default=NULL,
