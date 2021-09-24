@@ -31,7 +31,7 @@ deSolve, ReacTran, RColorBrewer, geosphere, fields, stats4, GEOmap, geomapdata, 
 These will be installed automatically upon running the script, unless they have already been installed.
 
 ## References
-[1] AADR: https://reich.hms.harvard.edu/allen-ancient-dna-resource-aadr-downloadable-genotypes-present-day-and-ancient-dna-data
+[1] Allen Ancient DNA Resource (AADR): Downloadable genotypes of present-day and ancient DNA data: https://reich.hms.harvard.edu/allen-ancient-dna-resource-aadr-downloadable-genotypes-present-day-and-ancient-dna-data
 
 [2] Bergstrom A, McCarthy SA, Hui R, Almarri MA, Ayub Q, Danecek P, Chen Y, Felkel S, Hallast P, Kamm J, et al. (2020). Insights into human genetic variation and population history from 929 diverse genomes. Science, 367(6484)
 
