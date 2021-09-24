@@ -25,6 +25,11 @@ The "-a" flag specifies the age of the allele in years. The commands will be run
 
 The results described in the afore-mentioned paper have been produced using R verision 3.6.
 
+The scripts are dependant on the following libraries:
+deSolve, ReacTran, RColorBrewer, geosphere, fields, stats4, GEOmap, geomapdata, plsgenomics, paramtest, bbmle, parallel, maps, mapdata, mapplots, rworldmap, scales, tidyverse, FME, optparse
+
+These will be installed automatically upon running the script, unless they have already been installed.
+
 ## References
 [1] AADR: https://reich.hms.harvard.edu/allen-ancient-dna-resource-aadr-downloadable-genotypes-present-day-and-ancient-dna-data
 
